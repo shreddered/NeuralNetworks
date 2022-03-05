@@ -52,4 +52,4 @@ deltaRule lr af (weights, output) (vec, value) = (weights', output')
     curr = sum (zipWith ((*)) weights vec) + 1
     foo w x = w + lr * (value - (f curr)) * (f' curr) * x
     weights' = zipWith foo weights vec
-    output' = curr : output
+    output' = (f curr) : output
