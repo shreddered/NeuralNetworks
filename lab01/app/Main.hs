@@ -14,5 +14,4 @@ main = do
           }
       func = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1]
       weights = train func 0.3 thresholdAF
-  putStrLn "Hello world"
   print weights
