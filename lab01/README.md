@@ -20,3 +20,13 @@ data ActivationFunction = ActivationFunction
 Все функции для выполнения расчётов определены в модуле [Data.Neuron](src/Data/Neuron.hs).
 
 [Точка входа](app/Main.hs) содержит лишь обработку полученных результатов.
+
+Зависимость количества ошибок от номера эпохи:
+
+* Для пороговой функции активации:
+
+![threshold plot](images/plot1.png)
+
+* Для логистической функции активации:
+
+![logistic plot](images/plot2.png)
