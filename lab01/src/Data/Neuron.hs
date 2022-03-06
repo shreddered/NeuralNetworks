@@ -30,11 +30,12 @@ trainHelper (weights, _) func lr af = trainHelper (weights', err') func lr af
     diff = zipWith ( (abs .) . (-) ) func output
     err' = sum diff
 
-epoch :: [Double]
-      -> [Double]
-      -> Double
-      -> ActivationFunction
-      -> ([Double], [Double])
+-- one epoch
+epoch :: [Double]             -- old weights
+      -> [Double]             -- reference function
+      -> Double               -- learning rate
+      -> ActivationFunction   -- activation function
+      -> ([Double], [Double]) -- (weights, output)
 epoch weights func lr af = (weights', output)
   where
     indexes = [ [1, a, b, c, d] | a <- [0, 1]
@@ -45,11 +46,17 @@ epoch weights func lr af = (weights', output)
     (weights', output') = foldl (deltaRule lr af) (weights, []) (zip indexes func)
     output = reverse output'
 
-deltaRule lr af (weights, output) (vec, value) = (weights', output')
+-- auxiliary function for delta-rule folding
+deltaRule :: Double               -- learning rate
+          -> ActivationFunction   -- activation function
+          -> ([Double], [Double]) -- (old weights, neuron output)
+          -> ([Double], Double)   -- (binary vector, function value)
+          -> ([Double], [Double]) -- (new weights, neuron output)
+deltaRule learningRate activationFunc (weights, output) (vec, value) = (weights', output')
   where
-    f = primary af
-    f' = derivative af
+    f = primary activationFunc
+    f' = derivative activationFunc
     net = sum (zipWith (*) weights vec)
-    foo w x = w + lr * (value - (f net)) * (f' net) * x
+    foo w x = w + learningRate * (value - (f net)) * (f' net) * x
     weights' = zipWith foo weights vec
     output' = (f net) : output
