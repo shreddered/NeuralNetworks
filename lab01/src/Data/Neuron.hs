@@ -14,7 +14,7 @@ train :: [Double]           -- reference
       -> Double             -- learning rate
       -> ActivationFunction -- activation function
       -> [Double]           -- final weights
-train = trainHelper (replicate 4 0, 1) -- a dirty hack
+train = trainHelper (replicate 5 0, 1) -- a dirty hack
 
 -- train helper (epoch loop)
 trainHelper :: ([Double], Double) -- (weights, error)
@@ -37,10 +37,10 @@ epoch :: [Double]
       -> ([Double], [Double])
 epoch weights func lr af = (weights', output)
   where
-    indexes = [ [a, b, c, d] | a <- [0, 1]
-                             , b <- [0, 1]
-                             , c <- [0, 1]
-                             , d <- [0, 1]
+    indexes = [ [1, a, b, c, d] | a <- [0, 1]
+                                , b <- [0, 1]
+                                , c <- [0, 1]
+                                , d <- [0, 1]
               ]
     (weights', output') = foldl (deltaRule lr af) (weights, []) (zip indexes func)
     output = reverse output'
@@ -49,7 +49,7 @@ deltaRule lr af (weights, output) (vec, value) = (weights', output')
   where
     f = primary af
     f' = derivative af
-    curr = sum (zipWith ((*)) weights vec) + 1
-    foo w x = w + lr * (value - (f curr)) * (f' curr) * x
+    net = sum (zipWith (*) weights vec)
+    foo w x = w + lr * (value - (f net)) * (f' net) * x
     weights' = zipWith foo weights vec
-    output' = (f curr) : output
+    output' = (f net) : output
