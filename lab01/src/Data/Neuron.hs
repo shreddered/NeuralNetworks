@@ -13,23 +13,23 @@ data ActivationFunction = ActivationFunction
 train :: [Double]           -- reference
       -> Double             -- learning rate
       -> ActivationFunction -- activation function
-      -> [Double]           -- final weights
-train = trainHelper (replicate 5 0, 1) -- a dirty hack
+      -> ([Double], [Int])  -- (final weights, list of errors)
+train = trainHelper (replicate 5 0, []) -- a dirty hack
 
 -- train helper (epoch loop)
 -- tail recursion power
-trainHelper :: ([Double], Double) -- (weights, error)
+trainHelper :: ([Double], [Int])  -- (weights, error)
             -> [Double]           -- reference (boolean function)
             -> Double             -- learning rate
             -> ActivationFunction -- activation function
-            -> [Double]           -- final weights
-trainHelper (weights, 0) _ _ _ = weights
-trainHelper (weights, _) func lr af = trainHelper (weights', err') func lr af
+            -> ([Double], [Int])  -- final weights
+trainHelper (weights, err@(0:_)) _ _ _ = (weights, reverse err)
+trainHelper (weights, err) func lr af = trainHelper (weights', err' : err) func lr af
   where
     (weights', output) = epoch weights func lr af
     -- Hamming distance
-    diff = zipWith ( (abs .) . (-) ) func output
-    err' = sum diff
+    diff = zipWith (/=) func output
+    err' = (sum . map fromEnum) diff
 
 -- one epoch
 epoch :: [Double]             -- old weights
