@@ -9,11 +9,12 @@ train :: [Double]           -- reference
       -> ([Double], [Int])  -- (final weights, list of errors)
 ```
 
-`ActivationFunction` - вспомогательный тип, в котором передаётся информация о функции активации (сама функция и её производная):
+`ActivationFunction` - вспомогательный тип, в котором передаётся информация о функции активации (сама функция, её производная и функция для получения реального выхода):
 ```haskell
 data ActivationFunction = ActivationFunction
     { primary    :: Double -> Double
     , derivative :: Double -> Double
+    , out        :: Double -> Double
     }
 ```
 
