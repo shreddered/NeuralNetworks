@@ -17,6 +17,7 @@ train :: [Double]           -- reference
 train = trainHelper (replicate 5 0, 1) -- a dirty hack
 
 -- train helper (epoch loop)
+-- tail recursion power
 trainHelper :: ([Double], Double) -- (weights, error)
             -> [Double]           -- reference (boolean function)
             -> Double             -- learning rate
@@ -43,6 +44,7 @@ epoch weights func lr af = (weights', output)
                                 , c <- [0, 1]
                                 , d <- [0, 1]
               ]
+    -- the epoch loop itself (nothing but a fancy fold)
     (weights', output') = foldl (deltaRule lr af) (weights, []) (zip indexes func)
     output = reverse output'
 
