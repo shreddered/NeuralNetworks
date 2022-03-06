@@ -6,7 +6,7 @@
 train :: [Double]           -- reference
       -> Double             -- learning rate
       -> ActivationFunction -- activation function
-      -> [Double]           -- final weights
+      -> ([Double], [Int])  -- (final weights, list of errors)
 ```
 
 `ActivationFunction` - вспомогательный тип, в котором передаётся информация о функции активации (сама функция и её производная):
