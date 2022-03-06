@@ -21,7 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/shre
 
 dependencies:
 - base >= 4.7 && < 5
-- vector >= 0.12
+- Chart >= 1.9
 
 library:
   source-dirs: src
