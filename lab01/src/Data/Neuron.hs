@@ -7,6 +7,7 @@ module Data.Neuron
 data ActivationFunction = ActivationFunction
     { primary    :: Double -> Double
     , derivative :: Double -> Double
+    , out        :: Double -> Double
     }
 
 -- train function
@@ -54,11 +55,12 @@ deltaRule :: Double               -- learning rate
           -> ([Double], [Double]) -- (old weights, neuron output)
           -> ([Double], Double)   -- (binary vector, function value)
           -> ([Double], [Double]) -- (new weights, neuron output)
-deltaRule learningRate activationFunc (weights, output) (vec, value) = (weights', output')
+deltaRule learningRate activationFunc (weights, output) (vec, t) = (weights', output')
   where
     f = primary activationFunc
     f' = derivative activationFunc
     net = sum (zipWith (*) weights vec)
-    newWeight w x = w + learningRate * (value - (f net)) * (f' net) * x
+    y = (out activationFunc) (f net)
+    newWeight w x = w + learningRate * (t - y) * (f' net) * x
     weights' = zipWith newWeight weights vec
-    output' = (f net) : output
+    output' = y : output
