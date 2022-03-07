@@ -1,8 +1,10 @@
 module Data.Neuron
     ( ActivationFunction (..)
     , train
+    , combinations
     ) where
 
+import Control.Arrow
 import Data.List
     ( tails
     )
@@ -15,64 +17,49 @@ data ActivationFunction = ActivationFunction
     }
 
 -- train function
-train :: [Double]           -- reference
-      -> Double             -- learning rate
-      -> ActivationFunction -- activation function
-      -> ([Double], [Int])  -- (final weights, list of errors)
-train = trainHelper (replicate 5 0, []) -- a dirty hack
-
--- train helper (epoch loop)
--- tail recursion power
-trainHelper :: ([Double], [Int])  -- (weights, error)
-            -> [Double]           -- reference (boolean function)
-            -> Double             -- learning rate
-            -> ActivationFunction -- activation function
-            -> ([Double], [Int])  -- final weights
-trainHelper (weights, err@(0:_)) _ _ _ = (weights, reverse err)
-trainHelper (weights, err) func lr af = trainHelper (weights', err' : err) func lr af
+train :: Double
+      -> ActivationFunction
+      -> [Double]
+      -> [([Double], [Double])]
+train learningRate activationFunc func =
+    tail $ takeWhileInclusive (snd . second pred) infiniteTable
   where
-    (weights', output) = epoch weights func lr af
-    -- Hamming distance
-    diff = zipWith (/=) func output
-    err' = (sum . map fromEnum) diff
+    pred :: [Double] -> Bool
+    pred = or . zipWith (/=) func
+    infiniteTable = iterate foo (replicate 5 0, replicate 16 1)
+    foo = epoch learningRate activationFunc func
 
 -- one epoch
-epoch :: [Double]             -- old weights
-      -> [Double]             -- reference function
-      -> Double               -- learning rate
+epoch :: Double               -- learning rate
       -> ActivationFunction   -- activation function
+      -> [Double]             -- original function
+      -> ([Double], [Double]) -- old weights
       -> ([Double], [Double]) -- (weights, output)
-epoch weights func lr af = (weights', output)
+epoch learningRate activationFunc func (weights, _) =
+   (second reverse . foldl widrowHoff (weights, []) . zip vectors) func
   where
-    indexes = [ [1, a, b, c, d] | a <- [0, 1]
+    vectors = [ [1, a, b, c, d] | a <- [0, 1]
                                 , b <- [0, 1]
                                 , c <- [0, 1]
                                 , d <- [0, 1]
               ]
-    -- the epoch loop itself (nothing but a fancy fold)
-    (weights', output') = foldl (deltaRule lr af) (weights, []) (zip indexes func)
-    output = reverse output'
-
--- auxiliary function for delta-rule folding
-deltaRule :: Double               -- learning rate
-          -> ActivationFunction   -- activation function
-          -> ([Double], [Double]) -- (old weights, neuron output)
-          -> ([Double], Double)   -- (binary vector, function value)
-          -> ([Double], [Double]) -- (new weights, neuron output)
-deltaRule learningRate activationFunc (weights, output) (vec, t) = (weights', output')
-  where
-    f = primary activationFunc
-    f' = derivative activationFunc
-    net = sum (zipWith (*) weights vec)
-    y = (out activationFunc) (f net)
-    newWeight w x = w + learningRate * (t - y) * (f' net) * x
-    weights' = zipWith newWeight weights vec
-    output' = y : output
+    widrowHoff x@(weights, output) (vector, t) = (zipWith newWeight vector *** (:) y) x
+      where
+        f = primary activationFunc
+        f' = derivative activationFunc
+        net = sum $ zipWith (*) weights vector
+        y = (out activationFunc) (f net)
+        newWeight x w = w + learningRate * (t - y) * (f' net) * x
 
 -- generate combinations
 combinations :: Integral a => a -> [b] -> [[b]]
 combinations 0 lst = [[]]
 combinations n lst = do
   (x:xs) <- tails lst
-  rest <- combinations (n - 1) xs
-  return (x:rest)
+  rest   <- combinations (n - 1) xs
+  return $ x : rest
+
+takeWhileInclusive :: (a -> Bool) -> [a] -> [a]
+takeWhileInclusive _ []        = []
+takeWhileInclusive pred (x:xs) = x : if pred x then takeWhileInclusive pred xs
+                                               else []
