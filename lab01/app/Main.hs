@@ -25,9 +25,9 @@ main = do
           }
       func = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1 ]
       table1 = train 0.3 thresholdAF func
-      errors = (map (sum . map fromEnum) . map (zipWith (/=) func) . map snd) table1
+      errors = map (sum . map fromEnum . zipWith (/=) func . snd) table1
       table2 = train 0.3 logisticAF func
-      errors' = (map (sum . map fromEnum) . map (zipWith (/=) func) . map snd) table2
+      errors' = map (sum . map fromEnum . zipWith (/=) func . snd) table2
       thresholdPlot = zip ([1..] :: [Int]) errors
       logisticPlot = zip ([1..] :: [Int]) errors'
   prettyPrint table1 errors
