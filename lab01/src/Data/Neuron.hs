@@ -3,6 +3,10 @@ module Data.Neuron
     , train
     ) where
 
+import Data.List
+    ( tails
+    )
+
 -- for now I will keep it simple
 data ActivationFunction = ActivationFunction
     { primary    :: Double -> Double
@@ -64,3 +68,11 @@ deltaRule learningRate activationFunc (weights, output) (vec, t) = (weights', ou
     newWeight w x = w + learningRate * (t - y) * (f' net) * x
     weights' = zipWith newWeight weights vec
     output' = y : output
+
+-- generate combinations
+combinations :: Integral a => a -> [b] -> [[b]]
+combinations 0 lst = [[]]
+combinations n lst = do
+  (x:xs) <- tails lst
+  rest <- combinations (n - 1) xs
+  return (x:rest)
