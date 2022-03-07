@@ -1,9 +1,15 @@
 module Main where
 
+import Control.Arrow
+import Control.Monad (zipWithM_)
+
 import Data.Neuron
 
 import Graphics.Rendering.Chart.Easy
 import Graphics.Rendering.Chart.Backend.Cairo
+
+prettyPrint :: [([Double], [Double])] -> [Int] -> IO ()
+prettyPrint = zipWithM_ (\(weights, output) err -> putStrLn ((show weights) ++ (show output) ++ (show err)) )
 
 main :: IO ()
 main = do
@@ -18,11 +24,14 @@ main = do
           , out = \x -> if x < 0.5 then 0 else 1
           }
       func = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1 ]
-      (weights, errors) = train func 0.3 thresholdAF
+      table1 = train 0.3 thresholdAF func
+      errors = (map (sum . map fromEnum) . map (zipWith (/=) func) . map snd) table1
+      table2 = train 0.3 logisticAF func
+      errors' = (map (sum . map fromEnum) . map (zipWith (/=) func) . map snd) table2
       thresholdPlot = zip ([1..] :: [Int]) errors
-      (weights', errors') = train func 0.3 logisticAF
       logisticPlot = zip ([1..] :: [Int]) errors'
-  print weights
+  prettyPrint table1 errors
+  prettyPrint table2 errors'
   toFile def "images/plot1.png" $ do
     layout_title .= "Пороговая функция активации"
     layout_x_axis . laxis_title .= "Номер эпохи"
@@ -30,7 +39,6 @@ main = do
     setColors [opaque blue, opaque red]
     plot (line "Количество ошибок за эпоху" [thresholdPlot])
     plot (points "Количество ошибок за эпоху" (thresholdPlot))
-  print weights'
   toFile def "images/plot2.png" $ do
     layout_title .= "Логистическая функция активации"
     layout_x_axis . laxis_title .= "Номер эпохи"
