@@ -17,10 +17,10 @@ data ActivationFunction = ActivationFunction
     }
 
 -- train function
-train :: Double
-      -> ActivationFunction
-      -> [Double]
-      -> [([Double], [Double])]
+train :: Double                 -- learning rate
+      -> ActivationFunction     -- activation function
+      -> [Double]               -- original function
+      -> [([Double], [Double])] -- [(weights, output)]
 train learningRate activationFunc func =
     tail $ takeWhileInclusive (snd . second pred) infiniteTable
   where
