@@ -1,15 +1,17 @@
 module Main where
 
 import Control.Arrow
-import Control.Monad (zipWithM_)
 
 import Data.Neuron
+import Data.List (intercalate, unlines)
 
 import Graphics.Rendering.Chart.Easy
 import Graphics.Rendering.Chart.Backend.Cairo
 
-prettyPrint :: [([Double], [Double])] -> [Int] -> IO ()
-prettyPrint = zipWithM_ (\(weights, output) err -> putStrLn ((show weights) ++ (show output) ++ (show err)) )
+import Text.Printf
+
+prettyPrint :: [([Double], [Double])] -> [Int] -> [String]
+prettyPrint = zipWith (\(weights, output) err -> (intercalate "," $ printf "% .4f" <$> weights) ++ "\t" ++ (intercalate "," $ printf "%.f" <$> output) ++ "\t" ++ (printf "%2d" err))
 
 main :: IO ()
 main = do
@@ -30,8 +32,8 @@ main = do
       errors' = map (sum . map fromEnum . zipWith (/=) func . snd) table2
       thresholdPlot = zip ([1..] :: [Int]) errors
       logisticPlot = zip ([1..] :: [Int]) errors'
-  prettyPrint table1 errors
-  prettyPrint table2 errors'
+  (putStrLn . unlines) $ prettyPrint table1 errors
+  (putStr . unlines) $ prettyPrint table2 errors'
   toFile def "images/plot1.png" $ do
     layout_title .= "Пороговая функция активации"
     layout_x_axis . laxis_title .= "Номер эпохи"
