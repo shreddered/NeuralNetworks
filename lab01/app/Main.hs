@@ -56,5 +56,5 @@ main = do
     plot (line "Количество ошибок за эпоху" [logisticPlot])
     plot (points "Количество ошибок за эпоху" (logisticPlot))
   putStrLn (intercalate "," $ printf "% .4f" <$> weights)
-  mapM_ (print . tail) vectors'
+  mapM_ (putStrLn . intercalate "," . (<$>) (printf "%.f") ) vectors'
   print n
