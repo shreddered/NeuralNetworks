@@ -1,7 +1,7 @@
 module Data.Neuron
     ( ActivationFunction (..)
     , train
-    , combinations
+    , train'
     ) where
 
 import Control.Arrow
