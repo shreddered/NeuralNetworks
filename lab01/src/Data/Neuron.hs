@@ -13,27 +13,25 @@ import Data.List
 data ActivationFunction = ActivationFunction
     { primary    :: Double -> Double
     , derivative :: Double -> Double
-    , out        :: Double -> Double
     }
 
 -- train function
-train :: Double                 -- learning rate
-      -> ActivationFunction     -- activation function
-      -> [([Double], Double)]   -- original function, i.e. [(vector, value)]
-      -> [([Double], [Double])] -- [(weights, output)]
+train :: Double              -- learning rate
+      -> ActivationFunction  -- activation function
+      -> [([Double], Int)]   -- original function, i.e. [(vector, value)]
+      -> [([Double], [Int])] -- [(weights, output)]
 train learningRate activationFunc func =
     tail $ takeWhileInclusive (snd . second pred) infiniteTable
   where
-    pred :: [Double] -> Bool
     pred = or . zipWith (/=) (map snd func)
     infiniteTable = iterate foo (replicate 5 0, replicate 16 1)
     foo = epoch learningRate activationFunc func
 
-trainWithDepth :: Int                  -- depth
-               -> Double               -- learning rate
-               -> ActivationFunction   -- activation function
-               -> [([Double], Double)] -- original function, i.e. [(vector, value)]
-               -> ([Double], Int)      -- (weights, number of epochs)
+trainWithDepth :: Int                -- depth
+               -> Double             -- learning rate
+               -> ActivationFunction -- activation function
+               -> [([Double], Int)]  -- original function, i.e. [(vector, value)]
+               -> ([Double], Int)    -- (weights, number of epochs)
 trainWithDepth n learningRate activationFunc func = foldl choose ([], 0) $ take n (tail infiniteTable)
   where
     choose ([], n) (weights, output) = if hasErrors output
@@ -45,11 +43,11 @@ trainWithDepth n learningRate activationFunc func = foldl choose ([], 0) $ take 
     foo = epoch learningRate activationFunc func
 
 -- one epoch
-epoch :: Double               -- learning rate
-      -> ActivationFunction   -- activation function
-      -> [([Double], Double)] -- original function
-      -> ([Double], [Double]) -- old weights
-      -> ([Double], [Double]) -- (weights, output)
+epoch :: Double             -- learning rate
+      -> ActivationFunction -- activation function
+      -> [([Double], Int)]  -- original function
+      -> ([Double], [Int])  -- old weights, old output
+      -> ([Double], [Int])  -- (weights, output)
 epoch learningRate activationFunc func (weights, _) =
    (second reverse . foldl widrowHoff (weights, [])) func
   where
@@ -58,8 +56,8 @@ epoch learningRate activationFunc func (weights, _) =
         f = primary activationFunc
         f' = derivative activationFunc
         net = sum $ zipWith (*) weights vector
-        y = (out activationFunc) (f net)
-        newWeight x w = w + learningRate * (t - y) * (f' net) * x
+        y = round $ f net
+        newWeight x w = w + learningRate * (fromIntegral (t - y)) * (f' net) * x
 
 -- generate combinations
 combinations :: Integral a => a -> [b] -> [[b]]
@@ -76,9 +74,10 @@ takeWhileInclusive pred (x:xs) = x : if pred x then takeWhileInclusive pred xs
 
 train' :: Double                      -- learning rate
        -> ActivationFunction          -- activation function
-       -> [([Double], Double)]        -- original function, i.e. [(vector, value)]
+       -> [([Double], Int)]           -- original function, i.e. [(vector, value)]
        -> ([Double], [[Double]], Int) -- (weights, vectors, number of epochs)
-train' learningRate activationFunc func = head $ reverse (takeWhile (\(x, _, _) -> not $ null x) something)
+train' learningRate activationFunc func =
+    head $ reverse (takeWhile (\(x, _, _) -> not $ null x) something)
   where
     len = length func
     something = map chooseFromSubsets $ reverse [1..len-1]
@@ -94,6 +93,6 @@ train' learningRate activationFunc func = head $ reverse (takeWhile (\(x, _, _) 
     check weights = foldr (foo weights) True func
     foo _ _ False = False
     foo weights (vector, t) True = let net = sum $ zipWith (*) weights vector
-                                       y = (out activationFunc) (f net)
+                                       y = round $ f net
                                     in y == t
     f = primary activationFunc

@@ -11,21 +11,19 @@ import Graphics.Rendering.Chart.Backend.Cairo
 
 import Text.Printf
 
-prettyPrint :: [([Double], [Double])] -> [Int] -> [String]
+prettyPrint :: [([Double], [Int])] -> [Int] -> [String]
 prettyPrint = zipWith (\(weights, output) err -> (intercalate "," $ printf "% .4f" <$> weights)
-    ++ "\t" ++ (intercalate "," $ printf "%.f" <$> output) ++ "\t" ++ (printf "%2d" err))
+    ++ "\t" ++ (intercalate "," $ printf "%1d" <$> output) ++ "\t" ++ (printf "%2d" err))
 
 main :: IO ()
 main = do
   let thresholdAF = ActivationFunction
           { primary  = \x -> if x < 0 then 0 else 1
           , derivative = const 1
-          , out = id
           }
       logisticAF = ActivationFunction
           { primary = (/ 2) . (+ 1) . tanh
           , derivative = (/ 2) . (1-) . (^ 2) . tanh
-          , out = \x -> if x < 0.5 then 0 else 1
           }
       func = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1 ]
       vectors = [ [1, a, b, c, d] | a <- [0, 1]
