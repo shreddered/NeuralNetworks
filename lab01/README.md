@@ -3,10 +3,10 @@
 За обучение нейрона отвечает функция `train`, имеющая следующую сигнатуру:
 
 ```haskell
-train :: Double                 -- learning rate
-      -> ActivationFunction     -- activation function
-      -> [Double]               -- original function
-      -> [([Double], [Double])] -- [(weights, output)]
+train :: Double              -- learning rate
+      -> ActivationFunction  -- activation function
+      -> [([Double], Int)]   -- original function, i.e. [(vector, value)]
+      -> [([Double], [Int])] -- [(weights, output)]
 ```
 
 `ActivationFunction` - вспомогательный тип, в котором передаётся информация о функции активации (сама функция и её производная):
