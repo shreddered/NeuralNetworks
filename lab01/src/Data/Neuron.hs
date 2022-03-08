@@ -19,30 +19,25 @@ data ActivationFunction = ActivationFunction
 -- train function
 train :: Double                 -- learning rate
       -> ActivationFunction     -- activation function
-      -> [Double]               -- original function
+      -> [([Double], Double)]   -- original function, i.e. [(vector, value)]
       -> [([Double], [Double])] -- [(weights, output)]
 train learningRate activationFunc func =
     tail $ takeWhileInclusive (snd . second pred) infiniteTable
   where
     pred :: [Double] -> Bool
-    pred = or . zipWith (/=) func
+    pred = or . zipWith (/=) (map snd func)
     infiniteTable = iterate foo (replicate 5 0, replicate 16 1)
     foo = epoch learningRate activationFunc func
 
 -- one epoch
 epoch :: Double               -- learning rate
       -> ActivationFunction   -- activation function
-      -> [Double]             -- original function
+      -> [([Double], Double)] -- original function
       -> ([Double], [Double]) -- old weights
       -> ([Double], [Double]) -- (weights, output)
 epoch learningRate activationFunc func (weights, _) =
-   (second reverse . foldl widrowHoff (weights, []) . zip vectors) func
+   (second reverse . foldl widrowHoff (weights, [])) func
   where
-    vectors = [ [1, a, b, c, d] | a <- [0, 1]
-                                , b <- [0, 1]
-                                , c <- [0, 1]
-                                , d <- [0, 1]
-              ]
     widrowHoff x@(weights, output) (vector, t) = (zipWith newWeight vector *** (:) y) x
       where
         f = primary activationFunc

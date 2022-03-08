@@ -26,9 +26,14 @@ main = do
           , out = \x -> if x < 0.5 then 0 else 1
           }
       func = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1 ]
-      table1 = train 0.3 thresholdAF func
+      vectors = [ [1, a, b, c, d] | a <- [0, 1]
+                                  , b <- [0, 1]
+                                  , c <- [0, 1]
+                                  , d <- [0, 1]
+                ]
+      table1 = train 0.3 thresholdAF $ zip vectors func
       errors = map (sum . map fromEnum . zipWith (/=) func . snd) table1
-      table2 = train 0.3 logisticAF func
+      table2 = train 0.3 logisticAF $ zip vectors func
       errors' = map (sum . map fromEnum . zipWith (/=) func . snd) table2
       thresholdPlot = zip ([1..] :: [Int]) errors
       logisticPlot = zip ([1..] :: [Int]) errors'
