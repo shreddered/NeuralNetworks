@@ -9,12 +9,11 @@ train :: Double                 -- learning rate
       -> [([Double], [Double])] -- [(weights, output)]
 ```
 
-`ActivationFunction` - вспомогательный тип, в котором передаётся информация о функции активации (сама функция, её производная и функция для получения реального выхода):
+`ActivationFunction` - вспомогательный тип, в котором передаётся информация о функции активации (сама функция и её производная):
 ```haskell
 data ActivationFunction = ActivationFunction
     { primary    :: Double -> Double
     , derivative :: Double -> Double
-    , out        :: Double -> Double
     }
 ```
 
