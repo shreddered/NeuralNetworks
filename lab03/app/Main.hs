@@ -14,7 +14,7 @@ signal ts = [ (t, func t) | t <- ts ]
 
 main :: IO ()
 main = toFile def "images/plot1.png" $ do
-  layout_title .= "График исходной функции"
+  layout_title .= "График исходной функции на интервале [a, 2b-a]"
   layout_x_axis . laxis_title .= "t"
   layout_y_axis . laxis_title .= "x"
-  plot (line "x(t) = sqrt(0.1 * t) + 1" [ signal [1,1.01..5] ])
+  plot (line "x(t) = sqrt(0.1 * t) + 1" [ signal [1,1.01..8] ])
