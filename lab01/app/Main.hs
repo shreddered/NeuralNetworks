@@ -1,6 +1,7 @@
 module Main where
 
 import Control.Arrow
+import Control.Monad (mapM_)
 
 import Data.Neuron
 import Data.List (intercalate, unlines)
@@ -37,6 +38,7 @@ main = do
       errors' = map (sum . map fromEnum . zipWith (/=) func . snd) table2
       thresholdPlot = zip ([1..] :: [Int]) errors
       logisticPlot = zip ([1..] :: [Int]) errors'
+      (weights, vectors', n) = train' 0.3 logisticAF (zip vectors func)
   (putStrLn . unlines) $ prettyPrint table1 errors
   (putStr . unlines) $ prettyPrint table2 errors'
   toFile def "images/plot1.png" $ do
@@ -53,3 +55,6 @@ main = do
     setColors [opaque blue, opaque red]
     plot (line "Количество ошибок за эпоху" [logisticPlot])
     plot (points "Количество ошибок за эпоху" (logisticPlot))
+  putStrLn (intercalate "," $ printf "% .4f" <$> weights)
+  mapM_ (print . tail) vectors'
+  print n
