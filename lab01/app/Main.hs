@@ -12,7 +12,8 @@ import Graphics.Rendering.Chart.Backend.Cairo
 import Text.Printf
 
 prettyPrint :: [([Double], [Double])] -> [Int] -> [String]
-prettyPrint = zipWith (\(weights, output) err -> (intercalate "," $ printf "% .4f" <$> weights) ++ "\t" ++ (intercalate "," $ printf "%.f" <$> output) ++ "\t" ++ (printf "%2d" err))
+prettyPrint = zipWith (\(weights, output) err -> (intercalate "," $ printf "% .4f" <$> weights)
+    ++ "\t" ++ (intercalate "," $ printf "%.f" <$> output) ++ "\t" ++ (printf "%2d" err))
 
 main :: IO ()
 main = do
