@@ -1,6 +1,7 @@
 module Data.Extrapolation
     ( generatePoints
     , train
+    , getPredictions
     ) where
 
 import Control.Arrow
@@ -26,3 +27,13 @@ train learningRate points n windowSize =
                                               delta = x - net
                                               newWeights = zipWith (\xn w -> w + learningRate * delta * xn) (1:column)
                                            in ((+ delta^2) *** newWeights) params
+
+getPredictions :: [Double] -- points
+               -> Int      -- size of window
+               -> [Double] -- weights
+               -> ([Double], [Double]) -- predictions
+getPredictions points windowSize weights = first (reverse . take (20 - windowSize)) $ (iterate foo ([], initial)) !! 20
+  where
+    initial = drop (20 - windowSize) points
+    (w0:weights') = weights
+    foo (est, xs) = ((head xs):est, (tail xs) ++ [sum (zipWith (*) weights' xs) + w0])
