@@ -17,7 +17,7 @@ train :: Double               -- learning rate
       -> [Double]             -- points
       -> Int                  -- number of epochs
       -> Int                  -- size of window
-      -> ([Double], [Double]) -- (epsilon, weights)
+      -> ([Double], [Double]) -- (epsilons, weights)
 train learningRate points n windowSize =
     foldl something ([], replicate (windowSize + 1) 0) $ replicate n [0..18-windowSize]
   where
