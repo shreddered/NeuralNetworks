@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Numeric.Backprop
 
 main :: IO ()
 main = someFunc

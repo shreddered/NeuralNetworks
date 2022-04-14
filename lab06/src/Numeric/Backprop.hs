@@ -1,4 +1,4 @@
-module Lib
+module Numeric.Backprop
     ( someFunc
     ) where
 

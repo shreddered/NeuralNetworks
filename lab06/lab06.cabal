@@ -6,12 +6,12 @@ cabal-version: 1.12
 
 name:           lab06
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/lab06#readme>
-homepage:       https://github.com/githubuser/lab06#readme
-bug-reports:    https://github.com/githubuser/lab06/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2022 Author name here
+description:    Please see the README on GitHub at <https://github.com/shreddered/lab06#readme>
+homepage:       https://github.com/shreddered/lab06#readme
+bug-reports:    https://github.com/shreddered/lab06/issues
+author:         Dmitry Kalinin
+maintainer:     x.shreddered.x@gmail.com
+copyright:      2022 Dmitry Kalinin
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -21,11 +21,11 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/lab06
+  location: https://github.com/shreddered/lab06
 
 library
   exposed-modules:
-      Lib
+      Numeric.Backprop
   other-modules:
       Paths_lab06
   hs-source-dirs:
