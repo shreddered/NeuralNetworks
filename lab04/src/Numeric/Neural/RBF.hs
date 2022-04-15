@@ -1,5 +1,8 @@
 module Numeric.Neural.RBF
-    ( RBFNetwork
+    ( ActivationFunction(..)
+    , RBFNetwork
+    , emptyRBF
+    , trainRBF
     ) where
 
 import           Control.Applicative
@@ -23,16 +26,11 @@ data RBFNetwork a = RBFNetwork
 
 -- create empty RBF
 emptyRBF :: (Floating a)
-         => a
-         -> ActivationFunction a
-         -> [Vector a]
+         => a                    -- learning rate
+         -> ActivationFunction a -- activation function
+         -> [Vector a]           -- centers
          -> RBFNetwork a
-emptyRBF lr func cntrs = RBFNetwork
-    { activationFunc = func
-    , centers = cntrs
-    , weights = V.empty
-    , learningRate = lr
-    }
+emptyRBF lr func cntrs = RBFNetwork func cntrs V.empty lr
 
 trainRBF :: (Floating a, Traversable t)
          => RBFNetwork a        -- Network to train
@@ -42,6 +40,8 @@ trainRBF :: (Floating a, Traversable t)
 trainRBF (RBFNetwork func ctrs _ lr) input target = (network, errors)
   where
     network = RBFNetwork func ctrs ws lr
-    phis = map createPhi ctrs
-    createPhi c = \x -> exp (V.sum $ V.zipWith (\xi cji -> (xi - cji)^2) x c)
-    (ws, errors) = _a
+    phis = map phi ctrs
+    phi c = \x -> exp (V.sum $ V.zipWith (\xi cji -> (xi - cji)^2) x c)
+    (ws, errors) = _a -- TODO: define helper function for this shit
+    inputs x = 1:(phis <*> pure x)
+    net x ws_ = sum $ zipWith (*) (V.toList x) ws_
