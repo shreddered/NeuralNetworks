@@ -1,26 +1,22 @@
 module Numeric.Neural.RBF
     ( ActivationFunction(..)
-    , RBFNetwork
+    , RBFNetwork(..)
     , emptyRBF
     , trainRBF
     ) where
 
-import           Control.Applicative
-import           Data.Vector (Vector)
-import qualified Data.Vector as V
+import Control.Applicative
+import Control.Arrow
 
 -- data type for polymorphic activation function
-data ActivationFunction a = ActivationFunction
-    { primary :: a -> a
-    , derivative :: a -> a
-    }
+data ActivationFunction a = ActivationFunction (a -> a) (a -> a)
 
 -- RBF Network (very simple)
 -- although it can be defined in category theory fashion
 data RBFNetwork a = RBFNetwork
     { activationFunc :: ActivationFunction a
-    , centers :: [Vector a]
-    , weights :: Vector a
+    , centers :: [[a]]
+    , weights :: [a]
     , learningRate :: a
     }
 
@@ -28,20 +24,28 @@ data RBFNetwork a = RBFNetwork
 emptyRBF :: (Floating a)
          => a                    -- learning rate
          -> ActivationFunction a -- activation function
-         -> [Vector a]           -- centers
+         -> [[a]]    -- centers
          -> RBFNetwork a
-emptyRBF lr func cntrs = RBFNetwork func cntrs V.empty lr
+emptyRBF lr func cntrs = RBFNetwork func cntrs empty lr
 
-trainRBF :: (Floating a, Traversable t)
+trainRBF :: (Floating a, Eq a)
          => RBFNetwork a        -- Network to train
-         -> t (Vector a, a)     -- traversable of (vector, output)
-         -> t (Vector a, a)     -- traversable of (vector, target output)
+         -> [([a], a)]     -- traversable of (vector, output)
+         -> [([a], a)]     -- traversable of (vector, target output)
          -> (RBFNetwork a, [a]) -- (network, [errors])
-trainRBF (RBFNetwork func ctrs _ lr) input target = (network, errors)
+trainRBF (RBFNetwork func@(ActivationFunction f _) ctrs _ lr) input target = (second reverse) (network, errors)
   where
     network = RBFNetwork func ctrs ws lr
+    j = length ctrs
     phis = map phi ctrs
-    phi c = \x -> exp (V.sum $ V.zipWith (\xi cji -> (xi - cji)^2) x c)
-    (ws, errors) = _a -- TODO: define helper function for this shit
-    inputs x = 1:(phis <*> pure x)
-    net x ws_ = sum $ zipWith (*) (V.toList x) ws_
+    phi c = \x -> exp (sum $ zipWith (\xi cji -> (xi - cji)^2) x c)
+    (ws, errors) = (head . dropWhile ((/= 0) . head . snd) . tail) table -- drop while err != 0
+    table = iterate trainHelper (replicate (j + 1) 0, [])
+    trainHelper (w, err) = let w' = epoch w
+                            in (w', (hammingDistance w') : err)
+    epoch w = foldl newWeights w input
+    output w = f . sum . (zipWith (*) w) . (1:) . (phis <*>) . pure
+    newWeights w (vec, t) = let inputs = 1 : (phis <*> pure vec)
+                                y = output w vec
+                             in zipWith (\wi phi_i -> wi + lr * (t - y) * phi_i) w inputs
+    hammingDistance w = foldl (\err (vec, t) -> err + abs (t - (output w vec))) 0 target
