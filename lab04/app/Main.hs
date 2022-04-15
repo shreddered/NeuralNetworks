@@ -38,6 +38,8 @@ main = do
   putStr "Using the following vectors: "
   putStrLn (intercalate ", " $ prettyPrint <$> trainVectors)
   putStrLn $ printf "It took %d epochs to train a net." (length errors)
+  putStr "Weights: "
+  putStrLn $ "(" ++ (intercalate ", " $ printf "%.3f" <$> (weights trainedNetwork)) ++ ")"
   -- TODO: plot of errors
   toFile def "images/plot.png" $ do
     layout_title .= "Количество ошибок в каждой эпохе"
