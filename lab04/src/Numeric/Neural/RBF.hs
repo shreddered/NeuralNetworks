@@ -5,8 +5,8 @@ module Numeric.Neural.RBF
     , trainRBF
     ) where
 
-import Control.Applicative
-import Control.Arrow
+import Control.Applicative ((<*>), pure)
+import Control.Arrow (second)
 
 -- data type for polymorphic activation function
 data ActivationFunction a = ActivationFunction (a -> a) (a -> a)
@@ -26,13 +26,13 @@ emptyRBF :: (Floating a)
          -> ActivationFunction a -- activation function
          -> [[a]]    -- centers
          -> RBFNetwork a
-emptyRBF lr func cntrs = RBFNetwork func cntrs empty lr
+emptyRBF lr func cntrs = RBFNetwork func cntrs [] lr
 
 trainRBF :: (Floating a, Eq a)
-         => RBFNetwork a        -- Network to train
-         -> [([a], a)]     -- traversable of (vector, output)
-         -> [([a], a)]     -- traversable of (vector, target output)
-         -> (RBFNetwork a, [a]) -- (network, [errors])
+         => RBFNetwork a          -- Network to train
+         -> [([a], a)]            -- traversable of (vector, output)
+         -> [([a], a)]            -- traversable of (vector, target output)
+         -> (RBFNetwork a, [Int]) -- (network, [errors])
 trainRBF (RBFNetwork func@(ActivationFunction f _) ctrs _ lr) input target = (second reverse) (network, errors)
   where
     network = RBFNetwork func ctrs ws lr
@@ -48,4 +48,4 @@ trainRBF (RBFNetwork func@(ActivationFunction f _) ctrs _ lr) input target = (se
     newWeights w (vec, t) = let inputs = 1 : (phis <*> pure vec)
                                 y = output w vec
                              in zipWith (\wi phi_i -> wi + lr * (t - y) * phi_i) w inputs
-    hammingDistance w = foldl (\err (vec, t) -> err + abs (t - (output w vec))) 0 target
+    hammingDistance w = foldl (\err (vec, t) -> err + fromEnum (t /= (output w vec))) 0 target
