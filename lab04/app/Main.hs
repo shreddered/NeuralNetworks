@@ -33,7 +33,8 @@ main = do
       trainVectors = fst $ unzip input
       network = emptyRBF 0.3 thresholdAF centers
       (trainedNetwork, errors) = trainRBF network input target
-      errPlot = zip ([1..] :: [Int]) errors
+      errPlot :: [(Double, Double)]
+      errPlot = zip [1..] (fromIntegral <$> errors)
   putStr "Using the following vectors: "
   putStrLn (intercalate ", " $ prettyPrint <$> trainVectors)
   putStrLn $ printf "It took %d epochs to train a net." (length errors)
@@ -42,6 +43,8 @@ main = do
     layout_title .= "Количество ошибок в каждой эпохе"
     layout_x_axis . laxis_title .= "Номер эпохи"
     layout_y_axis . laxis_title .= "Количество ошибок"
+    layout_x_axis . laxis_generate .= scaledAxis def (1.0, 60.0)
+    layout_legend .= Nothing
     setColors [opaque blue, opaque red]
     plot (line "Количество ошибок за эпоху" [errPlot])
-    plot (points "Количество ошибок за эпоху" (errPlot))
+    plot (points "Количество ошибок за эпоху" errPlot)
