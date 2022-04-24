@@ -42,7 +42,7 @@ trainBackprop (BackpropNetwork (n, j, m) hw ow func@(ActivationFunc f f') lr e) 
     vec = ((n + 1) >< 1) input
     t = (m >< 1) target
     (hiddenWeights', outWeights', outputs) = (head . dropWhile bigError . tail) table 
-    bigError (_, _, (y:_)) = let err = sqrt (sum $ zipWith (\x y -> (x - y)^2) target y)
+    bigError (_, _, (y:_)) = let err = sqrt $ sum $ zipWith (\x y -> (x - y)^2) target y
                               in err > e
     table = iterate trainHelper (hw, ow, [])
     trainHelper (hw_, ow_, tbl) = let net1 = hw_ <> vec
@@ -50,7 +50,7 @@ trainBackprop (BackpropNetwork (n, j, m) hw ow func@(ActivationFunc f f') lr e) 
                                       net2 = ow_ <> out1
                                       y = f `cmap` net2
                                       derivative2 = f' `cmap` net2
-                                      delta2 = zipMatrix (*) derivative2 (t - y)
+                                      delta2 = zipMatrix (*) derivative2 $ t - y
                                       derivative1 = f' `cmap` net1
                                       delta1 = zipMatrix (*) derivative1 $ (tr ow) <> delta2
                                       hw' = hw_ + scale lr (delta1 <> (tr vec))

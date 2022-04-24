@@ -33,13 +33,13 @@ trainRBF :: (Floating a, Eq a)
          -> [([a], a)]            -- traversable of (vector, output)
          -> [([a], a)]            -- traversable of (vector, target output)
          -> (RBFNetwork a, [Int]) -- (network, [errors])
-trainRBF (RBFNetwork func@(ActivationFunction f _) ctrs _ lr) input target = (second reverse) (network, errors)
+trainRBF (RBFNetwork func@(ActivationFunction f _) ctrs _ lr) input target = second reverse $ (network, errors)
   where
     network = RBFNetwork func ctrs ws lr
     j = length ctrs
     phis = map phi ctrs
-    phi c = \x -> exp (sum $ zipWith (\xi cji -> (xi - cji)^2) x c)
-    (ws, errors) = (head . dropWhile ((/= 0) . head . snd) . tail) table -- drop while err != 0
+    phi c = \x -> exp $ sum $ zipWith (\xi cji -> (xi - cji)^2) x c
+    (ws, errors) = head . dropWhile ((/= 0) . head . snd) . tail $ table -- drop while err != 0
     table = iterate trainHelper (replicate (j + 1) 0, [])
     trainHelper (w, err) = let w' = epoch w
                             in (w', (hammingDistance w') : err)
