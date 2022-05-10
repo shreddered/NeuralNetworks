@@ -35,8 +35,16 @@ Available options:
 
 ![image2](images/centers.png)
 
-Ниже результаты для каждого округа:
+Ниже результаты для некоторых округов:
 
 * ЗелАО
 
 ![zelenograd](images/zelenograd.png)
+
+* Новомосковский АО
+
+![new](images/new.png)
+
+* ВАО
+
+![east](images/east.png)
