@@ -1,39 +1,75 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Data.Geo
-  ( Geometry(..)
+  ( Point(..)
   , FeatureItem(..)
   , Features(..)
+  , clusterizeFeatures
   ) where
 
 import Data.Aeson
+import Data.Cluster
 
-data Geometry = Geometry
-  { coordinates :: [Double]
-  , geometryType :: String
-  } deriving Show
+data Point = Point
+  { lat :: Double
+  , lng :: Double
+  } deriving (Eq, Show)
 
-instance FromJSON Geometry where
-  parseJSON = withObject "Geometry" $ \obj -> Geometry
-    <$> (obj .: "coordinates") <*> (obj .: "type")
+instance FromJSON Point where
+  parseJSON = withObject "Point" $ (pointFromList <$>) . (.: "coordinates")
 
-data FeatureItem = FeatureItem
-  { geometry :: Geometry
-  , properties :: Value
-  , featureType :: String
+instance ToJSON Point where
+  toJSON (Point lat_ lng_) = object [ "coordinates" .= [lng_, lat_]
+                                    , "type" .= ("Point" :: String) ]
+
+instance ClusterData Point where
+  -- good enough for demostration purposes
+  mean lst = Point { lng = (sum $ map lng lst) / (fromIntegral $ length lst)
+                   , lat = (sum $ map lat lst) / (fromIntegral $ length lst)
+                   }
+  distance (Point lng1 lat1) (Point lng2 lat2) = -- haversine formula
+    let p1 = lat1 * pi / 180
+        p2 = lat2 * pi / 180
+        dp = p2 - p1
+        dl = (lng2 - lng1) * pi / 180
+        a = (sin $ dp / 2)^2 + (cos p1) * (cos p2) * (sin $ dl / 2)^2
+        c = 2 * (atan2 (sqrt a) (sqrt $ 1 - a))
+     in 6.376e+6 * c
+
+pointFromList :: [Double] -> Point
+pointFromList lst = Point (lst !! 1) (lst !! 0)
+
+newtype FeatureItem = FeatureItem
+  { geometry :: Point
   } deriving Show
 
 instance FromJSON FeatureItem where
   parseJSON = withObject "FeatureItem" $ \obj -> FeatureItem
-    <$> (obj .: "geometry") <*> (obj .: "properties") <*> (obj .: "type")
+    <$> (obj .: "geometry")
 
-data Features = Features
+instance ToJSON FeatureItem where
+  toJSON (FeatureItem p) = object [ "geometry" .= p
+                                  , "type" .= ("Feature" :: String)
+                                  , "properties" .= Null ]
+
+newtype Features = Features
   { features :: [FeatureItem]
-  , featuresType :: String
   } deriving Show
 
 instance FromJSON Features where
   parseJSON = withObject "Features" $ \obj -> Features
-    <$> (obj .: "features") <*> (obj .: "type")
+    <$> (obj .: "features")
 
-clusterizeFeatures :: Maybe Features -> Features
-clusterizeFeatures Nothing = error "Error while parsing input data"
-clusterizeFeatures (Just (Features lst t)) = Features lst t
+instance ToJSON Features where
+  toJSON (Features lst) = object [ "features" .= lst
+                                 , "type" .= ("FeatureCollection" :: String) ]
+
+clusterizeFeatures :: Maybe Features -> [Point] -> (Features, [Features])
+clusterizeFeatures Nothing _ = error "Error while parsing input data"
+clusterizeFeatures (Just (Features lst)) centers =
+    (makeFeatures centers', makeFeatures <$> clusters)
+  where
+    points = map geometry lst
+    (clusters, centers') = kMeans points centers
+
+makeFeatures points = Features lst
+  where lst = map (FeatureItem $) points
