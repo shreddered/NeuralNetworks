@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Data.Cluster
+      Data.Geo
   other-modules:
       Paths_lab09
   hs-source-dirs:
@@ -33,6 +34,7 @@ library
   build-depends:
       aeson
     , base >=4.7 && <5
+    , containers
     , optparse-applicative
   default-language: Haskell2010
 
@@ -46,6 +48,7 @@ executable lab09-exe
   build-depends:
       aeson
     , base >=4.7 && <5
+    , containers
     , lab09
     , optparse-applicative
   default-language: Haskell2010
@@ -61,6 +64,7 @@ test-suite lab09-test
   build-depends:
       aeson
     , base >=4.7 && <5
+    , containers
     , lab09
     , optparse-applicative
   default-language: Haskell2010
