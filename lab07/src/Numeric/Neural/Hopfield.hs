@@ -13,6 +13,7 @@ newtype HopfieldNetwork = HopfieldNetwork { weights :: Matrix Double }
 initHopfield :: [[Double]] -> HopfieldNetwork
 initHopfield vectors = HopfieldNetwork w'
   where
+    vectors' = scanl1' checkLength vectors
     w = sum $ map makeMatrix vectors
     makeMatrix vec = (col vec) <> (row vec)
     -- zero out main diag
@@ -30,3 +31,7 @@ evalHopfield network@(HopfieldNetwork w) vec
                                     | netK > 0 -> 1
                                     | otherwise -> yOld
                   ) net vec
+
+checkLength vec1 vec2
+  | length vec1 == length vec2 = vec2
+  | otherwise                  = error "Images must have the same size"
