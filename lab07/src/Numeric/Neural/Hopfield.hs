@@ -13,7 +13,7 @@ newtype HopfieldNetwork = HopfieldNetwork { weights :: Matrix Double }
 initHopfield :: [[Double]] -> HopfieldNetwork
 initHopfield vectors = HopfieldNetwork w'
   where
-    vectors' = scanl1' checkLength vectors
+    vectors' = scanl1 checkLength vectors
     w = sum $ map makeMatrix vectors
     makeMatrix vec = (col vec) <> (row vec)
     -- zero out main diag
